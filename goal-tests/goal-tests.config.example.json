@@ -1,0 +1,25 @@
+{
+  "_readme": "Copy this file to goal-tests.config.json next to goals-runner.sh and edit it. Keys starting with _ are ignored.",
+  "goals_dir": "goals",
+  "timeout_seconds": 90,
+  "watch_repos": ["~/Projects/my-website"],
+  "offline_check_url": "https://example.com",
+  "env_file": "secrets.env",
+  "ledger_file": "ledger.json",
+  "log_file": "goal-tests.log",
+  "notify": {
+    "channels": ["stdout", "macos"],
+    "_channels_help": "Any of: stdout, macos, webhook, smtp. Add webhook or smtp once their settings below are filled in.",
+    "webhook_url": "",
+    "_webhook_help": "Better: leave this empty and put GOAL_TESTS_WEBHOOK_URL=https://... in secrets.env (chmod 600).",
+    "smtp": {
+      "host": "smtp.example.com",
+      "port": 587,
+      "security": "starttls",
+      "username": "you@example.com",
+      "password_env": "GOAL_TESTS_SMTP_PASSWORD",
+      "from": "Goal tests <you@example.com>",
+      "to": ["you@example.com"]
+    }
+  }
+}

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# security-check.sh: run before every commit and every push.  ./scripts/security-check.sh
+# Stack-agnostic. Exit 0 = safe. Any failure blocks. Each check says what it looks for.
+#
+# Copy to scripts/security-check.sh in your project, chmod +x, and add checks of your own at the end.
+# Scans files git tracks (or every file, outside a git repo). Lines containing "example" are ignored
+# by the key scan, so placeholders in example configs never trip it.
+set -u
+cd "$(dirname "$0")/.." || exit 1
+PASS=0; FAIL=0; WARN=0
+ok()   { echo "  ✓ $1"; PASS=$((PASS+1)); }
+bad()  { echo "  ✗ $1"; FAIL=$((FAIL+1)); }
+warn() { echo "  ! $1"; WARN=$((WARN+1)); }
+SELF="scripts/security-check.sh"
+
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  FILES=$(git ls-files | grep -vxF "$SELF")
+  IN_GIT=1
+else
+  FILES=$(find . -type f -not -path './.git/*' -not -path '*/node_modules/*' | sed 's|^\./||' | grep -vxF "$SELF")
+  IN_GIT=0
+fi
+scan() { printf '%s\n' "$FILES" | while IFS= read -r f; do [ -f "$f" ] && printf '%s\0' "$f"; done | xargs -0 grep -IHEn "$@" 2>/dev/null; }
+
+echo "=== Security check ==="
+
+# 1. Live keys and tokens: the shapes of real vendor keys (Stripe, OpenAI, Anthropic, AWS,
+#    GitHub, Slack, Resend, private JWTs). Add your own vendors to KEYS.
+KEYS='(sk|rk)_live_[A-Za-z0-9]{16,}|sk-(ant|proj)-[A-Za-z0-9_-]{16,}|sk-[A-Za-z0-9]{32,}|AKIA[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{20,}|re_[A-Za-z0-9]{20,}_[A-Za-z0-9]{8,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+hits=$(scan -e "$KEYS" | grep -vi example)
+if [ -z "$hits" ]; then ok "no keys or tokens in tracked files"
+else bad "key or token shapes found (rotate any real key, then remove it):"; printf '%s\n' "$hits" | cut -c1-140 | sed 's/^/      /'; fi
+
+# 2. Env files: never tracked. .env.example is fine.
+envs=$(printf '%s\n' "$FILES" | grep -E '(^|/)\.env($|\.)' | grep -v 'example')
+[ "$IN_GIT" -eq 0 ] && envs=""
+if [ -z "$envs" ]; then ok "no .env files tracked"; else bad "env files tracked by git: $envs"; fi
+
+# 3. Key and certificate files: never tracked.
+keyfiles=$(printf '%s\n' "$FILES" | grep -Ei '\.(pem|p12|pfx|key|keystore|jks)$|(^|/)id_(rsa|ed25519|ecdsa)$')
+if [ -z "$keyfiles" ]; then ok "no private key or certificate files tracked"; else bad "key files tracked: $keyfiles"; fi
+
+# 4. .gitignore protects env files.
+if [ -f .gitignore ] && grep -qE '^\.env' .gitignore; then ok ".gitignore covers .env"
+elif [ "$IN_GIT" -eq 1 ]; then bad ".gitignore does not list .env (add a line: .env)"
+else warn "not a git repo, .gitignore not checked"; fi
+
+# 5. Swallowed errors: empty catch blocks (JS/TS) and bare except-pass (Python).
+caught=$(scan -e 'catch ?\([^)]*\) ?\{[[:space:]]*\}' | grep -E '^[^:]+\.(js|jsx|ts|tsx|mjs|cjs):')
+pyexc=$(scan -A1 -e '^[[:space:]]*except[^:]*:[[:space:]]*$' | grep -E '\.py-[0-9]+-[[:space:]]*pass[[:space:]]*$')
+if [ -z "$caught$pyexc" ]; then ok "no empty catch blocks or bare except-pass"
+else bad "errors swallowed silently:"; printf '%s\n%s\n' "$caught" "$pyexc" | grep -v '^$' | cut -c1-140 | sed 's/^/      /'; fi
+
+# 6. Dependencies with known high or critical holes (only for the stacks present).
+if [ -f package-lock.json ] && command -v npm >/dev/null 2>&1; then
+  if npm audit --audit-level=high >/dev/null 2>&1; then ok "npm audit: no high or critical"; else bad "npm audit found high or critical issues (run: npm audit)"; fi
+elif [ -f package.json ]; then warn "package.json without package-lock.json: npm audit skipped"; fi
+if [ -f requirements.txt ] || [ -f pyproject.toml ]; then
+  if command -v pip-audit >/dev/null 2>&1; then
+    if pip-audit -q >/dev/null 2>&1; then ok "pip-audit: clean"; else bad "pip-audit found issues (run: pip-audit)"; fi
+  else warn "Python project: install pip-audit for a dependency scan"; fi
+fi
+
+# 7. Optional deep scan of the whole git history, if gitleaks is installed.
+if command -v gitleaks >/dev/null 2>&1 && [ "$IN_GIT" -eq 1 ]; then
+  if gitleaks detect --no-banner -q >/dev/null 2>&1; then ok "gitleaks: history clean"; else bad "gitleaks found secrets in history (run: gitleaks detect)"; fi
+fi
+
+echo "=== $PASS passed, $FAIL failed, $WARN warnings ==="
+if [ "$FAIL" -eq 0 ]; then echo "SECURITY CHECK PASSED"; exit 0; fi
+echo "SECURITY CHECK FAILED: fix the items above before you commit or push"; exit 1

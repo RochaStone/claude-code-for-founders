@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+*.local
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+dist/
+out/
+state/
+*.log
+.DS_Store
+.pre-commit-config.yaml

@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# verify-quality.sh: run before calling anything done.  ./scripts/verify-quality.sh
+# Stack-agnostic: it detects what is in the project and runs only the checks that apply.
+# Exit 0 = quality gate passed. Warnings never fail the gate. Failures do.
+set -u
+cd "$(dirname "$0")/.." || exit 1
+PASS=0; FAIL=0; WARN=0
+ok()   { echo "  ✓ $1"; PASS=$((PASS+1)); }
+bad()  { echo "  ✗ $1"; FAIL=$((FAIL+1)); }
+warn() { echo "  ! $1"; WARN=$((WARN+1)); }
+MAX_LINES="${MAX_LINES:-500}"
+
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then FILES=$(git ls-files)
+else FILES=$(find . -type f -not -path './.git/*' -not -path '*/node_modules/*' | sed 's|^\./||'); fi
+has() { printf '%s\n' "$FILES" | grep -qE "$1"; }
+
+echo "=== Quality check ==="
+
+# 1. Shell scripts parse (and pass shellcheck, if you have it).
+if has '\.sh$'; then
+  broken=""
+  while IFS= read -r f; do [ -f "$f" ] && ! bash -n "$f" 2>/dev/null && broken="$broken $f"; done < <(printf '%s\n' "$FILES" | grep '\.sh$')
+  if [ -z "$broken" ]; then ok "shell scripts parse"; else bad "shell syntax errors in:$broken"; fi
+  if command -v shellcheck >/dev/null 2>&1; then
+    if printf '%s\n' "$FILES" | grep '\.sh$' | xargs shellcheck -S error >/dev/null 2>&1; then ok "shellcheck: no errors"; else bad "shellcheck found errors (run: shellcheck scripts/*.sh)"; fi
+  fi
+fi
+
+# 2. JSON files parse.
+if has '\.json$' && command -v python3 >/dev/null 2>&1; then
+  badjson=""
+  while IFS= read -r f; do [ -f "$f" ] && ! python3 -m json.tool "$f" >/dev/null 2>&1 && badjson="$badjson $f"; done < <(printf '%s\n' "$FILES" | grep '\.json$' | grep -v 'tsconfig')
+  if [ -z "$badjson" ]; then ok "JSON files parse"; else bad "invalid JSON:$badjson"; fi
+fi
+
+# 3. Node projects: run whichever of lint, typecheck, test and build the project defines.
+if [ -f package.json ] && command -v npm >/dev/null 2>&1; then
+  for s in lint typecheck test build; do
+    if python3 -c "import json,sys; sys.exit(0 if '$s' in json.load(open('package.json')).get('scripts',{}) else 1)" 2>/dev/null; then
+      if npm run -s "$s" >/dev/null 2>&1; then ok "npm run $s"; else bad "npm run $s failed (run it to see why)"; fi
+    fi
+  done
+fi
+
+# 4. Python projects: ruff and pytest, if installed.
+if has '\.py$'; then
+  if command -v ruff >/dev/null 2>&1; then
+    if ruff check -q . >/dev/null 2>&1; then ok "ruff: clean"; else bad "ruff found problems (run: ruff check .)"; fi
+  fi
+  if has '(^|/)tests?/' && command -v pytest >/dev/null 2>&1; then
+    if pytest -q >/dev/null 2>&1; then ok "pytest passed"; else bad "pytest failed (run: pytest)"; fi
+  fi
+fi
+
+# 5. No console.log left in app code (scripts and tests may print).
+logs=$(printf '%s\n' "$FILES" | grep -E '^(src|app|lib|components)/.*\.(js|jsx|ts|tsx)$' | while IFS= read -r f; do grep -Hn 'console\.log(' "$f" 2>/dev/null; done)
+if [ -z "$logs" ]; then ok "no console.log in app code"; else bad "console.log left in app code:"; printf '%s\n' "$logs" | head -10 | sed 's/^/      /'; fi
+
+# 6. Long files are hard to maintain. Warning only.
+long=$(printf '%s\n' "$FILES" | grep -E '\.(sh|py|js|jsx|ts|tsx|md)$' | while IFS= read -r f; do [ -f "$f" ] && n=$(wc -l < "$f") && [ "$n" -gt "$MAX_LINES" ] && echo "$f ($n lines)"; done)
+if [ -z "$long" ]; then ok "no source file over $MAX_LINES lines"; else warn "files over $MAX_LINES lines (consider splitting): $(echo $long)"; fi
+
+# 7. Leftover TODO and FIXME. Information only.
+todos=$(printf '%s\n' "$FILES" | grep -vE '\.(md|lock)$|verify-quality\.sh$' | while IFS= read -r f; do [ -f "$f" ] && grep -IHc -E 'TODO|FIXME' "$f" 2>/dev/null; done | awk -F: '{s+=$NF} END {print s+0}')
+[ "$todos" -gt 0 ] && warn "$todos TODO or FIXME markers left in code"
+
+echo "=== $PASS passed, $FAIL failed, $WARN warnings ==="
+if [ "$FAIL" -eq 0 ]; then echo "QUALITY CHECK PASSED"; exit 0; fi
+echo "QUALITY CHECK FAILED"; exit 1

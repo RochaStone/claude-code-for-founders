@@ -1,0 +1,15 @@
+{
+  "voice_file": "~/brand/voice.md",
+  "guarded_paths": [
+    "**/copy/**",
+    "**/*.email.md",
+    "**/landing/**",
+    "**/newsletter/**",
+    "**/captions/**"
+  ],
+  "ignore_paths": [
+    "**/node_modules/**",
+    "**/*.bak"
+  ],
+  "message": ""
+}

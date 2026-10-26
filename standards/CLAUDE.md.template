@@ -1,0 +1,117 @@
+# CLAUDE.md: house rules for this project
+
+Claude reads this file at the start of every session in this folder.
+Put the global parts (security, quality failure protocol, memory) in ~/.claude/CLAUDE.md so they apply everywhere.
+Delete anything that does not fit your project. Short and true beats long and ignored.
+
+---
+
+## Security: non-negotiable
+
+### Before ANY commit or push
+```bash
+./scripts/security-check.sh   # must pass. Never skip it.
+```
+If a repo has no `security-check.sh`, say so out loud and do a manual pass (search for keys and tokens, confirm `.env` is ignored) before committing. Never skip silently.
+
+### Safe versions
+These were the minimum safe versions when this template was written (March 2026).
+**Versions go stale. Check the current security advisories before you rely on this table.**
+
+| Thing | Minimum safe | Note |
+|---|---|---|
+| React | 19.0.4+ / 19.1.5+ / 19.2.4+ | earlier patches of each line are incomplete |
+| Next.js | 16.0.7+ or 15.5.7+ | |
+| Node.js | 24.13.0+ or 22.20.0+ | Node 20 is end of life, do not use it |
+
+### Secrets
+- No keys, tokens or passwords in code, ever. They live in `.env` files that git ignores, or in your host's secret settings.
+- Example config files hold placeholders only (`YOUR_KEY_HERE`).
+- A key that was ever committed is a leaked key. Rotate it, then remove it.
+
+---
+
+## Forbidden anti-patterns
+
+```javascript
+try { ... } catch (e) {}     // empty catch: the error vanishes. FORBIDDEN
+fetch(url)                   // unhandled promise: no await, no .catch. FORBIDDEN
+const KEY = "abc123"         // hardcoded secret. FORBIDDEN
+```
+
+```bash
+git push   # without running ./scripts/security-check.sh first. FORBIDDEN
+```
+
+Also: no `console.log` left in app code, no "temporary" code without a comment saying when it goes.
+
+---
+
+## Script naming
+
+| Use | Never use |
+|---|---|
+| `start-app.sh` | `run.sh` |
+| `stop-app.sh` | `server.sh` |
+| `setup.sh` | `launch.sh` |
+| `dev.sh` | `init.sh` |
+| `security-check.sh` | anything else for security |
+| `verify-quality.sh` | anything else for quality |
+
+Predictable names mean anyone (and any agent) can find the right script without asking.
+
+---
+
+## Quality failure protocol
+
+When anything breaks or a checkpoint fails:
+1. **Stop.** Do not patch forward on top of a broken step.
+2. **Rewind.** Go back to the last clean checkpoint. In Claude Code that is `/rewind` (or Esc twice). The human presses it.
+3. **Log it.** One entry in `QUALITY_ISSUES.md`: what broke, why, what the fix was.
+4. **Prevent it.** Add a line to this file (or `IMPLEMENTATION_RULES.md`) so it cannot happen the same way twice.
+5. **Restart** from the checkpoint.
+
+Never hand-undo a broken phase. Rewind it.
+
+---
+
+## AI-written code gets a human read
+
+AI-generated code is more likely to carry security holes than code written slowly by hand.
+After any big generation session:
+- [ ] Read every line of login, permissions and access control code yourself.
+- [ ] Check every place user input is shown on a page (cross-site scripting).
+- [ ] Check that one user can never load another user's records by changing an id in a URL.
+- [ ] Run `./scripts/security-check.sh`.
+
+---
+
+## Definition of done
+
+A feature is not done until:
+- [ ] `./scripts/security-check.sh` passes
+- [ ] `./scripts/verify-quality.sh` passes
+- [ ] Errors are handled, not swallowed
+- [ ] AI-written auth and access code has had a human read (if any)
+- [ ] No forbidden anti-patterns
+- [ ] No stray `console.log`
+- [ ] For anything shipped to real users: one goal test probe that proves it still works (see the goal-tests piece of this kit)
+- [ ] The human said yes at the checkpoint
+
+---
+
+## Memory rules
+
+- Read the memory index at the start of every session. Open a memory file when its READ BEFORE trigger matches the task.
+- One fact per memory file. Update an existing file before creating a new one. Delete memories that turn out to be wrong.
+- Never store secrets, client data or anything the repo already records (code, git history).
+- At session end, record new decisions and changed project state. Never delete history, only add or correct.
+- Open items live in one list with a default each. Never ask the same question twice (see the never-ask-twice piece of this kit).
+
+---
+
+## Deploys and pushes
+
+- No deploy or push without the human's explicit yes, in this session.
+- Before: check where it will land (branch, remote, project, URL).
+- After: prove it with the real end state (load the live URL, compare local and remote commits). An exit code is not proof.

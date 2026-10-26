@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Rocheverse Times</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,800;0,6..96,900;1,6..96,500&family=Archivo+Narrow:wght@500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=block" rel="stylesheet">
+<style>
+  :root { --hot:#FF2D8A; --candy:#FFB3D1; --paper:#FFE1EC; --cream:#F6EFE4; --ink:#111111; --red:#E0202E; --plum:#4A1033; --gold:#D4A64A; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1600px; height: 1000px; background: var(--hot); }
+  body { display: flex; align-items: center; justify-content: center; }
+  .page {
+    width: 1440px; height: 880px; background: var(--paper); color: var(--ink);
+    padding: 34px 54px; transform: rotate(-1.2deg);
+    box-shadow: 0 30px 60px rgba(74,16,51,.35), 0 6px 14px rgba(74,16,51,.25);
+    background-image: radial-gradient(rgba(17,17,17,.035) 1px, transparent 1px);
+    background-size: 5px 5px; position: relative;
+  }
+  .ears { display: flex; justify-content: space-between; align-items: center; font: 700 15px 'Archivo Narrow', sans-serif; letter-spacing: 3px; text-transform: uppercase; }
+  .ears .box { border: 2px solid var(--ink); padding: 6px 12px; }
+  h1.mast { font: 900 118px/1 'Bodoni Moda', serif; text-align: center; letter-spacing: -2px; margin: 6px 0 4px; }
+  .dateline { display: flex; justify-content: space-between; border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 7px 2px; font: 500 15px 'Archivo Narrow', sans-serif; letter-spacing: 2.5px; text-transform: uppercase; }
+  .breaking { display: inline-block; background: var(--red); color: var(--paper); font: 700 18px 'Archivo Narrow', sans-serif; letter-spacing: 5px; padding: 6px 16px; margin: 18px 0 8px; }
+  h2.head { font: 900 74px/0.98 'Bodoni Moda', serif; letter-spacing: -1px; }
+  .deck { font: italic 400 25px/1.3 'Newsreader', serif; margin: 12px 0 18px; max-width: 1000px; }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 34px; border-top: 1px solid var(--ink); padding-top: 14px; }
+  .story { border-right: 1px solid rgba(17,17,17,.35); padding-right: 30px; }
+  .story:last-child { border-right: 0; }
+  .story h3 { font: 800 25px/1.08 'Bodoni Moda', serif; margin-bottom: 6px; }
+  .story h3 span { color: var(--hot); }
+  .story p { font: 400 17.5px/1.42 'Newsreader', serif; margin-bottom: 14px; }
+  .story .kick { font: 700 13px 'Archivo Narrow', sans-serif; letter-spacing: 3px; text-transform: uppercase; color: var(--plum); display: block; margin-bottom: 3px; }
+  .price { position: absolute; right: 300px; top: 372px; transform: rotate(8deg); background: var(--paper); border: 3px solid var(--hot); color: var(--hot); font: 700 17px 'Archivo Narrow', sans-serif; letter-spacing: 3px; padding: 8px 12px; text-align: center; line-height: 1.2; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="ears"><span class="box">Rocha Coded</span><span>Free tools from the Rocheverse</span><span class="box">Late edition</span></div>
+    <h1 class="mast">The Rocheverse Times</h1>
+    <div class="dateline"><span>New York City, Monday, October 26, 2026</span><span>Thriving in transformational times</span><span>Six pieces, all free</span></div>
+    <div class="price">PRICE<br>NOTHING</div>
+    <span class="breaking">BREAKING NEWS</span>
+    <h2 class="head">WHAT IF YOUR FOUNDER<br>WORLD WORKS OUT?</h2>
+    <p class="deck">Claude Code, made safe for founders. Six small pieces check what she shipped, keep her voice, verify every claim and ask before anything goes live.</p>
+    <div class="cols">
+      <div class="story">
+        <span class="kick">Morning report</span>
+        <h3>Every page she shipped <span>checked before breakfast</span></h3>
+        <p>A quiet sweep runs at dawn. It only speaks when something changes, and it says what changed.</p>
+        <span class="kick">Society pages</span>
+        <h3>Assistant <span>stops asking twice</span></h3>
+        <p>One list, one default each. Silence now moves things forward.</p>
+      </div>
+      <div class="story">
+        <span class="kick">Style</span>
+        <h3>No copy ships <span>off-voice</span></h3>
+        <p>Claude reads her voice file before it writes a word in public. No exceptions, no excuses.</p>
+        <span class="kick">Corrections</span>
+        <h3>Every claim <span>checked twice</span></h3>
+        <p>Interview, draft, humanize, fact-check, verify. Then she decides.</p>
+      </div>
+      <div class="story">
+        <span class="kick">House rules</span>
+        <h3>Nothing ships <span>without her yes</span></h3>
+        <p>Security checks before every push. A reminder before every deploy.</p>
+        <span class="kick">Interiors</span>
+        <h3>Terminal goes <span>hot pink</span></h3>
+        <p>A leopard in the status line. Pink paper themes for the terminal.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

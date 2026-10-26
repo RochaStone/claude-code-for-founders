@@ -1,0 +1,27 @@
+# Rocha Coded: hot pink paper, ink text. Warp theme.
+# Copy to ~/.warp/themes/rocha-coded.yaml, then pick it in Settings > Appearance > Themes.
+name: Rocha Coded
+accent: '#FF2D8A'
+cursor: '#FF2D8A'
+background: '#FFE1EC'
+foreground: '#111111'
+details: lighter
+terminal_colors:
+  normal:
+    black: '#111111'
+    red: '#E0202E'
+    green: '#1E7A4C'
+    yellow: '#A87A1E'
+    blue: '#4A1033'
+    magenta: '#FF2D8A'
+    cyan: '#2E6E8E'
+    white: '#F6EFE4'
+  bright:
+    black: '#6B5A62'
+    red: '#FF4F5E'
+    green: '#2E9A63'
+    yellow: '#D4A64A'
+    blue: '#7A2357'
+    magenta: '#FF6FAE'
+    cyan: '#BFD4EA'
+    white: '#FFFFFF'

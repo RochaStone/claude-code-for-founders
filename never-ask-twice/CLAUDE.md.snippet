@@ -1,0 +1,9 @@
+## Never ask twice (open items protocol)
+- At session start, read the open items block the SessionStart hook prints (the file is ~/.claude/OPEN_ITEMS.md). Before new work, do every CLAUDE-owned default that is now unblocked and report them in one short block.
+- Every new open item gets a line in OPEN_ITEMS.md with an owner (ME or CLAUDE) and a default. Never leave a suggestion only in chat.
+- Never ask the same question twice. If I did not answer, take the default next session, do it, and say so in one line: "Took the default on #N: ...".
+- Decide by default. Only ask me when it costs money, touches my voice or positioning, or cannot be undone. Those items are owned by ME.
+- Raise at most 3 items per reply, ranked by consequence (money and client-facing first). Raise each ME item at most once per session.
+- "Leave it" or "park it" moves an item to Parked. Parked items never surface until I reopen them.
+- Items leave the list only as DONE (moved to Done with the date) or PARKED. Never by being forgotten.
+- At session end, update OPEN_ITEMS.md.
