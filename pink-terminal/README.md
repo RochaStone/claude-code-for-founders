@@ -1,6 +1,6 @@
 # Pink terminal
 
-**Hot pink paper, ink type, and a leopard in your status line.**
+**Hot pink paper, ink type, and a leopard in your status line. Or your colours, if you'd rather.**
 
 Too busy creating my dream life.
 This piece dresses Claude Code and your terminal in the Rocha Coded palette: hot pink, candy pink, pale pink paper, ink, marker red, plum and a little gold.
@@ -9,9 +9,9 @@ Runs on: Claude Code on your computer (the status line), plus iTerm2, Ghostty or
 
 ## The status line
 ```text
-🐆  Opus · ctx 42% · $0.42 · 3 open ♡
+🐆  Opus · ctx 42% · $0.42 · 3 open · LORE ♡
 ```
-Model, how full the conversation is, what this session has cost, and how many open items are waiting (from the never-ask-twice list).
+Model, how full the conversation is, what this session has cost, how many open items are waiting (from the never-ask-twice list) and your stamp word.
 Each part only appears when Claude Code sends it. Past 80% context the text turns marker red, so you know to wrap up.
 
 ```sh
@@ -22,6 +22,15 @@ Your settings are backed up first. A status line you already had is replaced, an
 Options:
 - `NO_COLOR=1` prints it plain.
 - `PINK_TERMINAL_ASCII=1` swaps the leopard emoji for `=^.^=` in terminals that can't show emoji.
+
+## Make it yours
+Everything here reads your `style.json` (see [STYLE.md](../STYLE.md)): the status line colours and stamp, the themes and the wallpaper.
+With no style.json, you get Rocha's look from `examples/style.rocha-coded.json`.
+Make your own terminal themes from your file:
+```sh
+python3 pink-terminal/themes/make-themes.py --style ~/.rocha-coded/style.json --out ~/Desktop
+```
+The three themes shipped here are that generator's output for Rocha's style.
 
 ## The themes
 ```sh
@@ -36,8 +45,9 @@ Options:
 Pale pink paper background, ink text, a hot pink cursor, candy pink selection. All sixteen colours are tuned to read on pink.
 
 ## The wallpaper
-`wallpaper.svg`: hot pink paper, WELCOME TO MY ONE WOMAN SHOW in a Didone, "build your founder world" in red marker, gold sparkles.
-Render it at your screen size (needs Google Chrome):
+`wallpaper.svg`: hot pink paper, WHAT IF YOUR FOUNDER WORLD WORKS OUT? in a Didone, "build your founder world" in red marker, a LORE stamp, gold sparkles.
+It is generated from Rocha's style by `make-wallpaper.py`. Yours uses your headline, scrawl, stamp and palette.
+Render it at your screen size (needs Google Chrome). The installer builds it from your style.json first:
 ```sh
 ./pink-terminal/install.sh --wallpaper 2560x1600
 ```

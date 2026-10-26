@@ -64,6 +64,11 @@ To update later: `git -C ~/.claude/skills/claude-code-for-founders pull`, then r
 
 After the first release, you can skip building: download the five skill zips from the [latest release](https://github.com/RochaStone/claude-code-for-founders/releases/latest).
 
+## Make it yours
+One file, `style.json`, holds your colours, fonts and words. Put it in your working folder or at `~/.rocha-coded/style.json`, and the pink terminal wears your look instead of mine.
+Two examples ship: `examples/style.rocha-coded.json` (my look) and `style.example.json` (blank, explained key by key in [STYLE.md](STYLE.md)).
+The same file works across every Rocha Coded tool, so you make it once.
+
 ## Every installer makes the same promises
 - **Backup first.** `~/.claude/settings.json` is copied to a dated backup before anything changes.
 - **Never breaks your settings.** If the file isn't valid JSON, nothing is written.

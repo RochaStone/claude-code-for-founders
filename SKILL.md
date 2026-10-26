@@ -29,6 +29,10 @@ This folder holds six independent pieces. Each has its own `README.md` and `inst
    - Copy gate: help them fill `~/.claude/canon.md` from `copy-gate/skills/claims-verify/canon.example.md`.
 6. Tell them hooks and the status line start with their next Claude Code session.
 
+## Make it theirs
+Pink terminal reads one shared `style.json` (see `STYLE.md`): `./style.json`, then `~/.rocha-coded/style.json`, then the bundled `examples/style.rocha-coded.json`.
+If the user has no style.json, offer to make one: ask for 3 to 5 references (screenshots, links, a Pinterest board), a palette if she has one, and the words she says a lot. Write style.json from `style.example.json`. Show her one rendered sample (`./pink-terminal/install.sh --wallpaper`, or `python3 pink-terminal/themes/make-themes.py --style <file> --out <folder>`). Never assume her taste is Rocha's.
+
 ## Rules
 - Never run an `--uninstall`, never edit their `settings.json` by hand, and never overwrite a file of theirs without asking first.
 - Goal test probes are read-only. Never write a probe that deploys, pushes, sends, submits or buys.
