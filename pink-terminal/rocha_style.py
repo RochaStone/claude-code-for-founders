@@ -1,7 +1,10 @@
 """Finds and loads the shared style.json (see STYLE.md at the repo root).
 
 Lookup order: $ROCHA_CODED_STYLE, ./style.json (or <cwd>/style.json), ~/.rocha-coded/style.json,
-then the bundled example. Missing or blank keys fall back to the bundled example, key by key.
+then the bundled example.
+Inheritance rule (BRAND.md): when a user style.json exists, ONLY missing palette colours and fonts fall
+back to the bundled Rocha example. Lines, owner, handle, name, references and notes never fall back to
+hers: they stay blank, and visible surfaces show the neutral PLACEHOLDER instead.
 """
 import json
 import os
@@ -11,6 +14,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BUNDLED = [os.path.join(HERE, "style.rocha-coded.json"),
            os.path.join(HERE, "..", "examples", "style.rocha-coded.json")]
 HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
+INHERITED = ("palette", "fonts")
+PLACEHOLDER = "YOUR WORDS HERE"
 
 
 def find_style(cwd=None):
@@ -50,7 +55,13 @@ def load_style(path=None, cwd=None):
             base = _read(b)
             break
     path = path or find_style(cwd)
-    style = _merge(base, _read(path)) if path else base
+    if not path or os.path.abspath(path) in [os.path.abspath(b) for b in BUNDLED]:
+        style = base
+    else:
+        user = _read(path)
+        style = {k: v for k, v in user.items() if k not in INHERITED}
+        for key in INHERITED:
+            style[key] = _merge(base.get(key, {}), user.get(key) or {})
     palette = style.get("palette", {})
     for key, val in list(palette.items()):
         if not (isinstance(val, str) and HEX.match(val)):

@@ -9,7 +9,9 @@ Rocha's look ships as the example. Yours replaces it.
 2. `~/.rocha-coded/style.json` (one file for everything you do)
 3. The bundled example, `examples/style.rocha-coded.json`
 
-The first one found wins. Any key you leave blank or leave out falls back to the bundled example, so a half-finished file still works.
+The first one found wins.
+Your file only borrows colours and fonts from the bundled example: any `palette` or `fonts` key you leave blank or leave out uses Rocha's, so a half-finished file still looks finished.
+Your words never come from hers. A blank `lines`, `name`, `owner`, `handle`, `references` or `notes` stays blank, and anything visible shows YOUR WORDS HERE until you fill it in.
 
 ## Start
 Copy `style.example.json` to `~/.rocha-coded/style.json` and fill it in.

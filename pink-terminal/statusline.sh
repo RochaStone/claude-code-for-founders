@@ -32,7 +32,8 @@ vals = [m.get("display_name") or m.get("id") or "", c.get("total_cost_usd", ""),
 print("\x1f".join("" if v is None else str(v) for v in vals))' 2>/dev/null)
 fi
 
-# Style: the first style.json found wins. Any missing or malformed value falls back to Rocha Coded.
+# Style: the first style.json found wins. Missing or malformed COLOURS fall back to Rocha Coded.
+# Words never do: a style.json without lines.stamp shows no stamp, never hers.
 style=""
 for f in "${ROCHA_CODED_STYLE:-}" "${cwd:+$cwd/style.json}" "$HOME/.rocha-coded/style.json" \
          "$HERE/style.rocha-coded.json" "$HERE/../examples/style.rocha-coded.json"; do

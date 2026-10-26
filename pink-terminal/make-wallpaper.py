@@ -15,7 +15,7 @@ from urllib.parse import quote_plus
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from rocha_style import load_style  # noqa: E402
+from rocha_style import PLACEHOLDER, load_style  # noqa: E402
 
 W, H = 2560, 1600
 
@@ -47,7 +47,7 @@ def build(style):
     scrawl_font = f.get("scrawl") or "Permanent Marker"
     axes = {mast_font: ":ital,wght@0,900;1,500", label_font: ":wght@600", scrawl_font: ""}
     families = "&amp;".join(f"family={quote_plus(name)}{ax}" for name, ax in axes.items())
-    headline = ln.get("headline") or "BUILD YOUR FOUNDER WORLD"
+    headline = ln.get("headline") or PLACEHOLDER
     lines = split_lines(headline.upper())
     size = int(min(250, 2050 / (0.66 * max(len(x) for x in lines)), 720 / (1.02 * len(lines))))
     block = size * 1.02 * len(lines)

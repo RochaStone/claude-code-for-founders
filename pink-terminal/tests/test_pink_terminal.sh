@@ -47,6 +47,23 @@ check "the shipped themes are exactly the generator's output for Rocha's style" 
 python3 "$HERE/make-wallpaper.py" --style "$T/style.json" --out "$T/wall.svg" > /dev/null
 check "wallpaper from a second style uses its words and colours" "python3 -c 'import xml.dom.minidom,sys;xml.dom.minidom.parse(sys.argv[1])' '$T/wall.svg' && grep -q 'TIDE' '$T/wall.svg' && grep -q '#0077B6' '$T/wall.svg' && grep -q 'salt water heals' '$T/wall.svg'"
 python3 "$HERE/make-wallpaper.py" --style "$HERE/../examples/style.rocha-coded.json" --out "$T/rc.svg" > /dev/null
+# Inheritance rule: a user file borrows only missing palette colours and fonts, never her words.
+printf '{"name":"","palette":{"hero":"#123456"},"lines":{}}' > "$T/partial.json"
+check "loader: missing colours and fonts fall back, words and identity never do" "python3 -c '
+import sys; sys.path.insert(0, sys.argv[1])
+from rocha_style import load_style
+s, _ = load_style(sys.argv[2])
+assert s[\"palette\"][\"hero\"] == \"#123456\"
+assert s[\"palette\"][\"ink\"] == \"#111111\" and s[\"fonts\"][\"masthead\"] == \"Playfair Display\"
+assert not s.get(\"lines\") and not s.get(\"name\")
+for k in (\"owner\", \"handle\", \"references\", \"notes\", \"site\"): assert k not in s, k
+' '$HERE' '$T/partial.json'"
+python3 "$HERE/make-wallpaper.py" --style "$T/partial.json" --out "$T/partial.svg" > /dev/null
+check "wallpaper for a user without lines shows YOUR WORDS HERE, none of hers" "grep -q 'YOUR WORDS HERE' '$T/partial.svg' && ! grep -qiE 'founder world|rocheverse|lore|works out' '$T/partial.svg' && grep -q '#123456' '$T/partial.svg'"
+python3 "$HERE/themes/make-themes.py" --style "$T/partial.json" --out "$T/pt" > /dev/null
+check "themes for an unnamed user style are not named after hers" "[ -f '$T/pt/my-style.itermcolors' ] && ! ls '$T/pt' | grep -q rocha"
+out=$(printf '{"model":{"display_name":"Opus"}}' | ROCHA_CODED_STYLE="$T/partial.json" OPEN_ITEMS_FILE="$T/none.md" NO_COLOR=1 bash "$HERE/statusline.sh")
+check "status line for a user without a stamp shows no stamp, never hers" "[ \"\$out\" = '🐆 Opus' ]"
 check "the shipped wallpaper.svg is the generator's output for Rocha's style" "cmp -s '$T/rc.svg' '$HERE/wallpaper.svg'"
 
 if command -v plutil >/dev/null 2>&1; then
