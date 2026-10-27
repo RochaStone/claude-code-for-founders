@@ -37,7 +37,7 @@ if [ -n "$WALL" ]; then
   OUT="${WALLPAPER_OUT:-$HOME/Pictures/one-woman-show.png}"
   mkdir -p "$(dirname "$OUT")"
   TMPD=$(mktemp -d); trap 'rm -rf "$TMPD"' EXIT
-  # Inline (not <img>) so the SVG can load its Google Fonts. Other screen shapes get hot pink margins.
+  # Inline (not <img>) so the SVG can load its Google Fonts. Other screen shapes get margins in your ground colour.
   # Built from your style.json (see STYLE.md), else the bundled example.
   python3 "$SRC/make-wallpaper.py" --out "$TMPD/w.svg" >/dev/null
   bg=$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); from rocha_style import load_style; print(load_style()[0]["palette"]["hero"])' "$SRC")
@@ -56,6 +56,7 @@ if [ "$STATUS" -eq 1 ]; then
   cp "$SRC/../examples/style.rocha-coded.json" "$DEST/style.rocha-coded.json"   # the fallback look
   items="${OPEN_ITEMS_FILE:-$CLAUDE_DIR/OPEN_ITEMS.md}"
   cmd="OPEN_ITEMS_FILE=$(printf '%q' "$items") bash $(printf '%q' "$DEST/statusline.sh")"
+  [ "${PINK_TERMINAL_ASCII:-0}" = "1" ] && cmd="PINK_TERMINAL_ASCII=1 $cmd"   # remembered for terminals without emoji
   python3 "$MERGE" set-statusline --settings "$SETTINGS" --command "$cmd"
   [ -f "$items" ] || echo "no open items file yet at $items, so the count stays hidden until you add one (see never-ask-twice)"
 fi

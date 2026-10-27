@@ -4,9 +4,9 @@
   python3 make-wallpaper.py                    style.json lookup (see STYLE.md), writes ./wallpaper.svg
   python3 make-wallpaper.py --style my.json --out ~/Desktop/wall.svg
 
-Background in palette.hero, type in palette.ink, the scrawl in palette.marker, sparkles in palette.gold.
+Ground in palette.hero, type in palette.paper, the scrawl in palette.accent, the stamp and rules in palette.gold.
 Words: lines.masthead (small tag), lines.headline (big), lines.affirm (italic line),
-lines.scrawl (red marker) and lines.stamp (the stamp). Fonts: fonts.masthead, fonts.label, fonts.scrawl.
+lines.scrawl (marker) and lines.stamp (the stamp). Fonts: fonts.masthead, fonts.label, fonts.scrawl.
 """
 import argparse
 import os
@@ -40,34 +40,41 @@ def split_lines(text, max_lines=3):
     return best[0]
 
 
+# Google Fonts axis specs for the fonts we know. Any other font is requested plainly, which always works.
+AXES = {"Fraunces": ":ital,opsz,wght@0,9..144,900;1,9..144,400",
+        "Bricolage Grotesque": ":opsz,wght@12..96,800"}
+
+
 def build(style):
     p, f, ln = style["palette"], style.get("fonts", {}), style.get("lines", {})
-    mast_font = f.get("masthead") or "Playfair Display"
-    label_font = f.get("label") or "Archivo Narrow"
+    ground, type_, accent, gold = p["hero"], p["paper"], p["accent"], p["gold"]
+    mast_font = f.get("masthead") or "Fraunces"
+    label_font = f.get("label") or "Bricolage Grotesque"
     scrawl_font = f.get("scrawl") or "Permanent Marker"
-    axes = {mast_font: ":ital,wght@0,900;1,500", label_font: ":wght@600", scrawl_font: ""}
-    families = "&amp;".join(f"family={quote_plus(name)}{ax}" for name, ax in axes.items())
+    fams = dict.fromkeys([mast_font, label_font, scrawl_font])
+    families = "&amp;".join(f"family={quote_plus(name)}{AXES.get(name, '')}" for name in fams)
     headline = ln.get("headline") or PLACEHOLDER
     lines = split_lines(headline.upper())
-    size = int(min(250, 2050 / (0.66 * max(len(x) for x in lines)), 720 / (1.02 * len(lines))))
-    block = size * 1.02 * len(lines)
-    top = 470 + (720 - block) / 2 + size * 0.8
+    size = int(min(250, 2050 / (0.70 * max(len(x) for x in lines)), 700 / (1.0 * len(lines))))
+    block = size * 1.0 * len(lines)
+    top = 490 + (700 - block) / 2 + size * 0.8
     head = "\n".join(
-        f'  <text x="1280" y="{top + i * size * 1.02:.0f}" text-anchor="middle" class="mast" font-size="{size}" '
-        f'font-weight="900" fill="{p["ink"]}">{escape(t)}</text>' for i, t in enumerate(lines))
-    rule_y = top + (len(lines) - 1) * size * 1.02 + 90
+        f'  <text x="1280" y="{top + i * size:.0f}" text-anchor="middle" class="mast" font-size="{size}" '
+        f'font-weight="900" fill="{type_}">{escape(t)}</text>' for i, t in enumerate(lines))
+    rule_y = top + (len(lines) - 1) * size + 90
     tag = escape((ln.get("masthead") or "").upper())
-    affirm = escape(ln.get("affirm") or "")
+    affirm = escape((ln.get("affirm") or "").lower())
     scrawl = escape(ln.get("scrawl") or "")
     stamp = escape((ln.get("stamp") or "").upper())
     scrawl_svg = (f'  <g transform="translate(1330 330) rotate(-6)">\n'
-                  f'    <text class="scrawl" font-size="76" fill="{p["marker"]}">{scrawl}</text>\n'
-                  f'    <path d="M-10,30 C240,62 700,54 990,22" stroke="{p["marker"]}" stroke-width="9" fill="none" stroke-linecap="round"/>\n'
+                  f'    <text class="scrawl" font-size="76" fill="{accent}">{scrawl}</text>\n'
+                  f'    <path d="M-10,30 C240,62 700,54 990,22" stroke="{accent}" stroke-width="7" fill="none" stroke-linecap="round"/>\n'
                   f'  </g>') if scrawl else ""
-    stamp_w = 90 + 62 * len(stamp)
+    stamp_w = 110 + 64 * len(stamp)
     stamp_svg = (f'  <g transform="translate(2050 1300) rotate(8)">\n'
-                 f'    <rect x="{-stamp_w / 2:.0f}" y="-70" width="{stamp_w}" height="120" fill="none" stroke="{p["ink"]}" stroke-width="6"/>\n'
-                 f'    <text x="0" y="12" text-anchor="middle" class="label" font-size="72" fill="{p["ink"]}">{stamp}</text>\n'
+                 f'    <rect x="{-stamp_w / 2:.0f}" y="-74" width="{stamp_w}" height="128" rx="6" fill="none" stroke="{gold}" stroke-width="5"/>\n'
+                 f'    <rect x="{-stamp_w / 2 + 12:.0f}" y="-62" width="{stamp_w - 24}" height="104" rx="3" fill="none" stroke="{gold}" stroke-width="1.5"/>\n'
+                 f'    <text x="0" y="14" text-anchor="middle" class="mast" font-size="78" font-weight="900" fill="{gold}" letter-spacing="10">{stamp}</text>\n'
                  f'  </g>') if stamp else ""
     return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">
   <title>{escape(headline)}</title>
@@ -75,31 +82,24 @@ def build(style):
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?{families}&amp;display=block');
-      .mast {{ font-family: '{escape(mast_font)}', Didot, 'Bodoni 72', serif; }}
-      .label {{ font-family: '{escape(label_font)}', 'Arial Narrow', 'Helvetica Neue', sans-serif; font-weight: 600; letter-spacing: 18px; }}
+      .mast {{ font-family: '{escape(mast_font)}', Georgia, 'Times New Roman', serif; }}
+      .label {{ font-family: '{escape(label_font)}', 'Helvetica Neue', Arial, sans-serif; font-weight: 800; letter-spacing: 12px; }}
       .scrawl {{ font-family: '{escape(scrawl_font)}', 'Marker Felt', cursive; }}
     </style>
     <filter id="grain" x="0" y="0" width="100%" height="100%">
       <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0.07  0 0 0 0 0.07  0 0 0 0 0.07  0 0 0 0.09 0"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0"/>
     </filter>
-    <symbol id="sparkle" viewBox="-10 -10 20 20">
-      <path d="M0,-10 C1,-2 2,-1 10,0 C2,1 1,2 0,10 C-1,2 -2,1 -10,0 C-2,-1 -1,-2 0,-10 Z" fill="{p["gold"]}"/>
-    </symbol>
   </defs>
-  <rect width="{W}" height="{H}" fill="{p["hero"]}"/>
-  <rect x="120" y="120" width="2320" height="1360" fill="none" stroke="{p["ink"]}" stroke-width="3"/>
-  <rect x="140" y="140" width="2280" height="1320" fill="none" stroke="{p["ink"]}" stroke-width="1"/>
-  <text x="1280" y="430" text-anchor="middle" class="label" font-size="44" fill="{p["ink"]}">{tag}</text>
+  <rect width="{W}" height="{H}" fill="{ground}"/>
+  <rect x="120" y="120" width="2320" height="1360" fill="none" stroke="{gold}" stroke-width="2"/>
+  <rect x="136" y="136" width="2288" height="1328" fill="none" stroke="{gold}" stroke-width="0.75"/>
+  <text x="1280" y="430" text-anchor="middle" class="label" font-size="40" fill="{type_}">{tag}</text>
 {head}
-  <line x1="880" y1="{rule_y:.0f}" x2="1680" y2="{rule_y:.0f}" stroke="{p["ink"]}" stroke-width="2"/>
-  <text x="1280" y="{rule_y + 75:.0f}" text-anchor="middle" class="mast" font-size="54" font-style="italic" font-weight="500" fill="{p["ink"]}">{affirm}</text>
+  <line x1="980" y1="{rule_y:.0f}" x2="1580" y2="{rule_y:.0f}" stroke="{gold}" stroke-width="2"/>
+  <text x="1280" y="{rule_y + 75:.0f}" text-anchor="middle" class="mast" font-size="52" font-style="italic" font-weight="400" fill="{type_}">{affirm}</text>
 {scrawl_svg}
 {stamp_svg}
-  <use href="#sparkle" x="330" y="330" width="90" height="90"/>
-  <use href="#sparkle" x="430" y="440" width="40" height="40"/>
-  <use href="#sparkle" x="560" y="1240" width="56" height="56"/>
-  <use href="#sparkle" x="1760" y="1330" width="44" height="44"/>
   <rect width="{W}" height="{H}" filter="url(#grain)"/>
 </svg>
 '''

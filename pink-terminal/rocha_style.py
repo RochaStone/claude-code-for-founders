@@ -65,7 +65,7 @@ def load_style(path=None, cwd=None):
     palette = style.get("palette", {})
     for key, val in list(palette.items()):
         if not (isinstance(val, str) and HEX.match(val)):
-            palette[key] = base.get("palette", {}).get(key, "#111111")
+            palette[key] = base.get("palette", {}).get(key, "#3B1230")
     return style, path
 
 

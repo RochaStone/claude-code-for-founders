@@ -7,6 +7,33 @@ You need the rules an engineer would insist on, in a file Claude reads at the st
 
 Runs on: Claude Code on your computer. The scripts run anywhere with bash.
 
+## Start here
+Every step below happens in the **terminal**: the app where you type instructions to your computer. On a Mac, press Cmd and Space together, type Terminal, and press Return. A window with a blinking cursor opens. That is it.
+A **command** is one line you type (or paste) into the terminal, then press Return.
+If you haven't downloaded the kit yet, start with the root README's Start here. It takes about two minutes.
+To **deploy** means putting your work live on the internet. To **push** means sending your code to GitHub. An **API key** is a password one service gives another, and it must never be written inside your code.
+
+1. Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
+   ```sh
+   cd ~/.claude/skills/claude-code-for-founders
+   ```
+   You will see nothing at all, and that means it worked.
+2. Add the house rules and the two check scripts to your project. Change `~/Projects/my-app` to your project's folder. Tip: type the start of the command, then drag your project folder into the terminal window and its address appears.
+   ```sh
+   ./standards/install.sh ~/Projects/my-app
+   ```
+   You will see `added:` three times, once for each file.
+3. Run the security check in your project.
+   ```sh
+   cd ~/Projects/my-app && ./scripts/security-check.sh
+   ```
+   You will see a list of ticks and `SECURITY CHECK PASSED`. If something shows a cross, the line under it says what to fix.
+4. Turn on the deploy reminder, so Claude checks with you before anything goes live.
+   ```sh
+   ~/.claude/skills/claude-code-for-founders/standards/install.sh --deploy-guard
+   ```
+   You will see `Deploy guard on.` It starts with your next Claude Code session.
+
 ## What you get
 | File | What it does |
 |---|---|
@@ -49,6 +76,12 @@ The files it added to your project are yours. Delete them by hand if you want th
 bash standards/tests/test_standards.sh
 ```
 The test plants a fake key, a tracked env file, an empty catch block and a syntax error in a throwaway repo and checks each one is caught.
+
+## If it goes wrong
+This happens to everyone the first time. Here are the three most common ones.
+- **It says `not a folder`.** The project address has a typo. Drag the folder into the terminal window instead of typing it.
+- **The security check says `key or token shapes found`.** A password-like key is sitting in your code. Ask Claude: "move this key into a .env file and show me what to rotate". Then change the key with the service it came from.
+- **It says `kept yours`.** You already had that file, so it was left exactly as it was. Nothing is lost.
 
 ## Made by Rocha
 

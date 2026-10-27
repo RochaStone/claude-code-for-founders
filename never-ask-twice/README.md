@@ -11,6 +11,31 @@ Missing a question costs you nothing.
 
 Runs on: Claude Code on your computer.
 
+## Start here
+Every step below happens in the **terminal**: the app where you type instructions to your computer. On a Mac, press Cmd and Space together, type Terminal, and press Return. A window with a blinking cursor opens. That is it.
+A **command** is one line you type (or paste) into the terminal, then press Return.
+If you haven't downloaded the kit yet, start with the root README's Start here. It takes about two minutes.
+A **hook** is a tiny rule Claude Code runs on its own at a set moment. This one runs when a session starts. Your **settings file** is `~/.claude/settings.json`, where Claude Code keeps its preferences. The installer saves a backup of it before changing anything.
+
+1. Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
+   ```sh
+   cd ~/.claude/skills/claude-code-for-founders
+   ```
+   You will see nothing at all, and that means it worked.
+2. Install the hook and your open items list.
+   ```sh
+   ./never-ask-twice/install.sh
+   ```
+   You will see `added SessionStart hook` and a note about the last step.
+3. Show the rules Claude will follow, so you can copy them.
+   ```sh
+   cat never-ask-twice/CLAUDE.md.snippet
+   ```
+   You will see a short list that starts with `## Never ask twice`. Copy it, then open `~/.claude/CLAUDE.md` in any text editor (create it if it isn't there) and paste it at the end. Or ask Claude: "add the never-ask-twice snippet to my CLAUDE.md".
+4. Start a new Claude Code session.
+   *A new session: in the terminal, type `/exit` to leave Claude Code, then type `claude` and press Return to start it again. In the desktop app, open a new chat.*
+   You will see Claude mention your open items before anything else. The three samples are made up, so swap them for your own in `~/.claude/OPEN_ITEMS.md`.
+
 ## Install
 ```sh
 ./never-ask-twice/install.sh
@@ -59,6 +84,12 @@ Your `OPEN_ITEMS.md` stays.
 ```sh
 bash never-ask-twice/tests/test_never_ask_twice.sh
 ```
+
+## If it goes wrong
+This happens to everyone the first time. Here are the three most common ones.
+- **Claude doesn't mention your open items.** Hooks load when a session starts, so start a fresh one.
+- **The installer says your settings file is not valid JSON.** It changed nothing, on purpose. Ask Claude: "my ~/.claude/settings.json is broken, please fix it and show me the change", then run the installer again.
+- **Claude still asks the same question twice.** The rules live in the snippet. Check it is pasted into `~/.claude/CLAUDE.md`, then start a new session.
 
 ## Made by Rocha
 

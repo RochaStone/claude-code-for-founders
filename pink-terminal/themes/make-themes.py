@@ -6,8 +6,11 @@
   python3 make-themes.py --out ~/Desktop       where to write (default: this folder)
 
 Writes <slug>.itermcolors, <slug>.ghostty and <slug>.yaml, where slug comes from the style's name.
-Terminals need a green and a cyan that most brand palettes don't have, so those two stay fixed
-(a deep bottle green and a muted sea blue). Everything else comes from your palette.
+palette.hero is the GROUND (the background). Type is whichever of paper or ink reads better on it.
+The ANSI accents come from your palette: accent (magenta), gold (yellow), cool (blue), wine (red),
+plus mint for green, because terminals need a green and most brand palettes have none.
+Every accent is lifted toward the type colour until it reads on the ground (3:1 contrast or better),
+so error text in red is never invisible on a dark ground.
 """
 import argparse
 import os
@@ -17,7 +20,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from rocha_style import load_style, slug  # noqa: E402
 
-GREEN, GREEN_BRIGHT, CYAN = "#1E7A4C", "#2E9A63", "#2E6E8E"
+MINT = "#8FD8B4"   # the mint pill colour of the Rocheverse look; used for the green slot
 
 
 def rgb(h):
@@ -36,17 +39,39 @@ def mix(a, b, t):
 
 
 def luminance(h):
-    r, g, b = (v / 255 for v in rgb(h))
+    def lin(v):
+        v /= 255
+        return v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
+    r, g, b = (lin(v) for v in rgb(h))
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
+def contrast(a, b):
+    la, lb = sorted((luminance(a), luminance(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def readable(colour, ground, toward, minimum=3.0):
+    """The colour itself if it reads on the ground, else nudged toward `toward` until it does."""
+    t = 0.0
+    while contrast(colour if t == 0 else mix(colour, toward, t), ground) < minimum and t < 1:
+        t = round(t + 0.05, 2)
+    return colour if t == 0 else mix(colour, toward, t)
+
+
 def scheme(p):
-    bg = p.get("paper_pink") or p["paper"]
-    ansi = [p["ink"], p["marker"], GREEN, mix(p["gold"], "#000000", 0.2), p["plum"], p["hero"], CYAN, p["paper"],
-            mix(p["ink"], p["paper"], 0.4), mix(p["marker"], "#FFFFFF", 0.2), GREEN_BRIGHT, p["gold"],
-            mix(p["plum"], "#FFFFFF", 0.25), mix(p["hero"], "#FFFFFF", 0.3), p["cool"], "#FFFFFF"]
-    return {"bg": bg, "fg": p["ink"], "cursor": p["hero"], "cursor_text": "#FFFFFF",
-            "sel_bg": p["accent"], "sel_fg": p["ink"], "bold": p["plum"], "ansi": ansi}
+    bg = p["hero"]
+    fg = p["paper"] if contrast(p["paper"], bg) >= contrast(p["ink"], bg) else p["ink"]
+    lift = lambda c: readable(c, bg, fg)  # noqa: E731
+    up = lambda c: readable(mix(c, fg, 0.25), bg, fg)  # noqa: E731
+    wine = p.get("wine") or p["marker"]
+    cyan = mix(MINT, p["cool"], 0.5)
+    other = p["ink"] if fg == p["paper"] else p["paper"]
+    ansi = [other, lift(wine), lift(MINT), lift(p["gold"]), lift(p["cool"]), lift(p["accent"]), lift(cyan), fg,
+            readable(mix(bg, fg, 0.45), bg, fg), up(p["marker"]), up(MINT), up(p["gold"]),
+            up(p["cool"]), up(p["accent"]), up(cyan), "#FFFFFF" if fg == p["paper"] else "#000000"]
+    return {"bg": bg, "fg": fg, "cursor": p["accent"], "cursor_text": bg,
+            "sel_bg": p.get("wine") or mix(bg, fg, 0.25), "sel_fg": fg, "bold": fg, "ansi": ansi}
 
 
 def iterm(s):
@@ -80,7 +105,7 @@ def warp(s, name, sl):
              f"# Copy to ~/.warp/themes/{sl}.yaml, then pick it in Settings > Appearance > Themes.",
              f"name: '{safe}'", f"accent: '{s['cursor']}'", f"cursor: '{s['cursor']}'",
              f"background: '{s['bg']}'", f"foreground: '{s['fg']}'",
-             f"details: {'lighter' if luminance(s['bg']) > 0.5 else 'darker'}", "terminal_colors:", "  normal:"]
+             f"details: {'lighter' if luminance(s['bg']) > 0.18 else 'darker'}", "terminal_colors:", "  normal:"]
     lines += [f"    {n}: '{s['ansi'][i]}'" for i, n in enumerate(names)]
     lines += ["  bright:"] + [f"    {n}: '{s['ansi'][i + 8]}'" for i, n in enumerate(names)]
     return "\n".join(lines) + "\n"

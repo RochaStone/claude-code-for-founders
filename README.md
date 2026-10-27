@@ -12,7 +12,37 @@ It never writes in a voice that isn't yours.
 It never ships a claim you can't stand behind, and never pushes anything you didn't say yes to.
 And it looks good doing it.
 
-Six small pieces. Take one. Take all six. Each one installs on its own and comes out again just as cleanly.
+Six small pieces. Take one. Take all six. Each one installs on its own and comes out again as cleanly.
+
+## Start here
+New to the terminal? You are in the right place. Five steps, one at a time, and each one tells you what you will see when it worked.
+
+The **terminal** is the app where you type instructions to your computer. On a Mac, press Cmd and Space together, type Terminal, and press Return.
+A **command** is one line you type (or paste) into the terminal, then press Return.
+**Claude Code** is Claude working on your computer, in the terminal or in the Claude desktop app.
+
+1. Check your computer has the two tools the kit needs, git and Python.
+   ```sh
+   git --version && python3 --version
+   ```
+   You will see two version numbers, like `git version 2.39` and `Python 3.12`. If a box pops up offering to install developer tools instead, click Install, wait for it to finish, and run this step again.
+2. Download the kit. To **clone** means to download your own copy of a project from GitHub, ready to update later.
+   ```sh
+   git clone https://github.com/RochaStone/claude-code-for-founders ~/.claude/skills/claude-code-for-founders
+   ```
+   You will see `Cloning into ...` and then your cursor again.
+3. Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
+   ```sh
+   cd ~/.claude/skills/claude-code-for-founders
+   ```
+   You will see nothing at all, and that means it worked.
+4. Check everything works on your computer. This runs every test in throwaway folders and changes nothing of yours.
+   ```sh
+   ./scripts/run-tests.sh
+   ```
+   After about a minute you will see `ALL TESTS PASSED (6 suites)`.
+5. Pick your first piece from the table below and open its folder's README. Never ask twice is a lovely first one.
+   Or start Claude Code (type `claude` and press Return) and say: "help me install never ask twice". It walks you through it, one question at a time.
 
 ## The six pieces
 
@@ -23,7 +53,7 @@ Six small pieces. Take one. Take all six. Each one installs on its own and comes
 | [Voice gate](voice-gate/) | Claude can't write your public copy until it has read how you sound. | two hooks |
 | [Copy gate](copy-gate/) | Interview, draft, humanize, fact-check, verify. Five skills between a draft and the internet. | five skills |
 | [Standards](standards/) | The house rules an engineer would insist on, plus the scripts that check them before anything leaves your computer. | files in your project, an optional hook |
-| [Pink terminal](pink-terminal/) | A hot pink status line with a leopard in it, terminal themes and a wallpaper. | a status line, themes |
+| [Pink terminal](pink-terminal/) | A plum and cream status line with a leopard in it, terminal themes and a wallpaper, all in your own colours if you like. | a status line, themes |
 
 ## Where it runs
 This kit runs in **Claude Code on your computer**: the terminal or the Claude desktop app, on a Mac or Linux.
@@ -65,7 +95,7 @@ To update later: `git -C ~/.claude/skills/claude-code-for-founders pull`, then r
 After the first release, you can skip building: download the five skill zips from the [latest release](https://github.com/RochaStone/claude-code-for-founders/releases/latest).
 
 ## Make it yours
-One file, `style.json`, holds your colours, fonts and words. Put it in your working folder or at `~/.rocha-coded/style.json`, and the pink terminal wears your look instead of mine.
+One file, `style.json`, holds your colours, fonts and words. Put it in your working folder or at `~/.rocha-coded/style.json`, and the terminal wears your look instead of mine.
 Two examples ship: `examples/style.rocha-coded.json` (my look) and `style.example.json` (blank, explained key by key in [STYLE.md](STYLE.md)).
 The same file works across every Rocha Coded tool, so you make it once.
 
@@ -90,6 +120,12 @@ Rules nothing enforces get skipped on a busy day. So I made them enforce themsel
 This didn't exist, so I built it.
 
 *The future doesn't belong to founders who become more like AI. It belongs to the ones who leverage AI to amplify more fully themselves.*
+
+## If it goes wrong
+This happens to everyone the first time. Here are the three most common ones.
+- **"command not found: git" or "command not found: python3".** Your Mac needs its developer tools. Type `xcode-select --install`, press Return, click Install in the box that appears, then try again.
+- **"Permission denied" when you run a script.** Put `bash` in front of it, like `bash ./scripts/run-tests.sh`. It does exactly the same thing.
+- **"destination path already exists" when you clone.** You already have the kit. Skip to step 3, then update it with `git pull`.
 
 ## Licence
 MIT. See [LICENSE](LICENSE).

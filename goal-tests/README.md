@@ -10,6 +10,33 @@ No alert fatigue. No daily noise. Silence means it all still works.
 
 Runs on: a Mac or Linux computer with Python 3. Not Cowork (it needs a daily schedule on your machine).
 
+## Start here
+Every step below happens in the **terminal**: the app where you type instructions to your computer. On a Mac, press Cmd and Space together, type Terminal, and press Return. A window with a blinking cursor opens. That is it.
+A **command** is one line you type (or paste) into the terminal, then press Return.
+If you haven't downloaded the kit yet, start with the root README's Start here. It takes about two minutes.
+A **probe** is one tiny check, like "my home page still loads". A **schedule** runs something at a set time every day: on a Mac that is **launchd**, on Linux it is **cron**. You never have to touch either. The installer sets it up.
+
+1. Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
+   ```sh
+   cd ~/.claude/skills/claude-code-for-founders
+   ```
+   You will see nothing at all, and that means it worked.
+2. Install goal tests and schedule the morning check for 8am.
+   ```sh
+   ./goal-tests/install.sh
+   ```
+   You will see `daily sweep scheduled at 08:00` and a short Next list.
+3. Copy your first probe into place. This one checks a web page loads.
+   ```sh
+   cp ~/.claude/goal-tests/examples/site-is-up.sh ~/.claude/goal-tests/goals/
+   ```
+   You will see nothing, which means it copied. Open that copied file in any text editor and change `https://example.com/` to your own website.
+4. Run your first check now, instead of waiting for the morning.
+   ```sh
+   bash ~/.claude/goal-tests/goals-runner.sh
+   ```
+   You will see `PASS site-is-up: OK 200`. Your website is officially being looked after.
+
 ## Install
 ```sh
 ./goal-tests/install.sh                 # daily at 08:00
@@ -76,6 +103,12 @@ This removes the daily job. Your probes, config and ledger stay in `~/.claude/go
 ```sh
 bash goal-tests/tests/test_runner.sh
 ```
+
+## If it goes wrong
+This happens to everyone the first time. Here are the three most common ones.
+- **You see `FAIL ... could not reach`.** Check the address in the probe has `https://` at the front and opens in your browser. If you are offline, the check waits for the wifi.
+- **No banner appears on your Mac.** Open System Settings > Notifications, find Script Editor, and turn on Allow notifications.
+- **The 8am check didn't happen.** Your laptop was asleep. The check runs as soon as it wakes, so nothing is missed.
 
 ## Made by Rocha
 

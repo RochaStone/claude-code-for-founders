@@ -17,6 +17,31 @@ Bonus: **prompt-master** rebuilds any prompt that keeps giving you average outpu
 
 Runs on: Claude Code on your computer, and Claude Cowork as uploaded skills.
 
+## Start here
+Every step below happens in the **terminal**: the app where you type instructions to your computer. On a Mac, press Cmd and Space together, type Terminal, and press Return. A window with a blinking cursor opens. That is it.
+A **command** is one line you type (or paste) into the terminal, then press Return.
+If you haven't downloaded the kit yet, start with the root README's Start here. It takes about two minutes.
+A **skill** is a set of instructions Claude loads when you ask for that job. A **zip** is one compressed file that holds a whole folder.
+
+1. Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
+   ```sh
+   cd ~/.claude/skills/claude-code-for-founders
+   ```
+   You will see nothing at all, and that means it worked.
+2. Install the five skills into Claude Code.
+   ```sh
+   ./copy-gate/install.sh
+   ```
+   You will see five lines, from `installed interview-me (link)` to `installed prompt-master (link)`.
+3. Start a new Claude Code session.
+   *A new session: in the terminal, type `/exit` to leave Claude Code, then type `claude` and press Return to start it again. In the desktop app, open a new chat.*
+   You will see your usual Claude, now with five new skills ready.
+4. Try the first step of the ritual. Type this to Claude:
+   "Interview me before you write my launch email."
+   You will see a numbered list of questions. Answer the ones you like, and Claude takes it from there.
+
+**Using Claude Cowork instead?** Make the five skill zips with `./copy-gate/install.sh --zip` (they appear in `dist/copy-gate/`). Upload them in the Claude desktop app (Customize > Skills > + > Upload a skill, one zip at a time), then say in a Cowork task: "Interview me before you write my launch email."
+
 ## Install in Claude Code
 ```sh
 ./copy-gate/install.sh           # links the five skills into ~/.claude/skills
@@ -66,6 +91,12 @@ It removes only the skills this kit installed.
 ```sh
 bash copy-gate/tests/test_copy_gate.sh
 ```
+
+## If it goes wrong
+This happens to everyone the first time. Here are the three most common ones.
+- **It says `skipped humanizer: you already have a skill with that name`.** Your own skill is safe. To use this one instead, run `./copy-gate/install.sh --force`. It keeps yours as a backup.
+- **Claude doesn't seem to know the skills.** Skills load when a session starts, so start a fresh one.
+- **Cowork won't take the upload.** Upload the `.zip` file, not the folder, and one skill at a time.
 
 ## Made by Rocha
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# statusline.sh: a hot pink status line for Claude Code.
+# statusline.sh: an editorial status line for Claude Code. Cream type on a plum ground by default.
 # Claude Code pipes session JSON to stdin. This prints one line:
-#   🐆 <model> · ctx <used>% · $<cost> · <n> open · <stamp>
+#   🐆 <model> · ctx <used>% · $<cost> · <stamp>  [<n> open]
 # Each part shows only when the data is there. Open items come from the never-ask-twice file.
-# Colours and the stamp word come from your style.json (see STYLE.md): palette.hero, palette.ink,
-# palette.accent, palette.marker and lines.stamp. No style.json means the bundled Rocha Coded look.
+# Colours and the stamp word come from your style.json (see STYLE.md): palette.hero is the ground,
+# palette.paper the type, palette.accent the open-items chip (with palette.ink type), palette.gold the
+# low-context warning, lines.stamp the badge. No style.json means the bundled Rocha Coded look.
+# Plain mode (NO_COLOR=1) prints: 🐆 <model> · ctx <used>% · $<cost> · <n> open · <stamp>
 #
 # Settings: OPEN_ITEMS_FILE (default ~/.claude/OPEN_ITEMS.md), NO_COLOR=1 for plain text,
 #           PINK_TERMINAL_ASCII=1 to swap the leopard emoji for =^.^=, ROCHA_CODED_STYLE=<file>
@@ -39,25 +41,26 @@ for f in "${ROCHA_CODED_STYLE:-}" "${cwd:+$cwd/style.json}" "$HOME/.rocha-coded/
          "$HERE/style.rocha-coded.json" "$HERE/../examples/style.rocha-coded.json"; do
   [ -n "$f" ] && [ -f "$f" ] && { style="$f"; break; }
 done
-s_hero="" s_ink="" s_accent="" s_marker="" stamp=""
+s_hero="" s_paper="" s_accent="" s_ink="" s_gold="" stamp=""
 if [ -n "$style" ]; then
   if command -v jq >/dev/null 2>&1; then
-    IFS=$'\x1f' read -r s_hero s_ink s_accent s_marker stamp < <(jq -r '[(.palette.hero // ""), (.palette.ink // ""),
-      (.palette.accent // ""), (.palette.marker // ""), (.lines.stamp // "")] | map(tostring) | join("\u001f")' "$style" 2>/dev/null)
+    IFS=$'\x1f' read -r s_hero s_paper s_accent s_ink s_gold stamp < <(jq -r '[(.palette.hero // ""), (.palette.paper // ""),
+      (.palette.accent // ""), (.palette.ink // ""), (.palette.gold // ""), (.lines.stamp // "")] | map(tostring) | join("\u001f")' "$style" 2>/dev/null)
   else
-    IFS=$'\x1f' read -r s_hero s_ink s_accent s_marker stamp < <(python3 -c '
+    IFS=$'\x1f' read -r s_hero s_paper s_accent s_ink s_gold stamp < <(python3 -c '
 import json, sys
 try: d = json.load(open(sys.argv[1]))
 except Exception: d = {}
 p, l = d.get("palette") or {}, d.get("lines") or {}
-print("\x1f".join(str(x or "") for x in [p.get("hero"), p.get("ink"), p.get("accent"), p.get("marker"), l.get("stamp")]))' "$style" 2>/dev/null)
+print("\x1f".join(str(x or "") for x in [p.get("hero"), p.get("paper"), p.get("accent"), p.get("ink"), p.get("gold"), l.get("stamp")]))' "$style" 2>/dev/null)
   fi
 fi
 rgb() { # $1 hex, $2 fallback hex -> "r;g;b"
   local h="$1"; case "$h" in \#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]) ;; *) h="$2" ;; esac
   printf '%d;%d;%d' "0x${h:1:2}" "0x${h:3:2}" "0x${h:5:2}"
 }
-HERO=$(rgb "$s_hero" "#FF2D8A"); INK=$(rgb "$s_ink" "#111111"); ACC=$(rgb "$s_accent" "#FFB3D1"); MARK=$(rgb "$s_marker" "#E0202E")
+GROUND=$(rgb "$s_hero" "#50163C"); PAPER=$(rgb "$s_paper" "#FFF7F4"); ACC=$(rgb "$s_accent" "#FE9DCA")
+INK=$(rgb "$s_ink" "#3B1230"); GOLD=$(rgb "$s_gold" "#E9B949")
 
 # Context: use the percentage when Claude Code sends it, else work it out from the token counts.
 ctx=""
@@ -94,10 +97,12 @@ for p in "${parts[@]}"; do line="${line:+$line · }$p"; done
 if [ -n "${NO_COLOR:-}" ]; then
   printf '%s %s\n' "$glyph" "$line"
 else
-  PINK="\033[48;2;${HERO}m\033[38;2;${INK}m"   # hero colour paper, ink text
-  HOT="\033[1;38;2;${HERO}m"                    # hero colour text
-  CANDY="\033[38;2;${ACC}m"                     # accent text
-  RESET="\033[0m"
-  warn=""; [ -n "$ctx" ] && [ "$ctx" -ge 80 ] 2>/dev/null && warn="\033[38;2;${MARK}m"   # marker colour when context runs low
-  printf "%b %s %b %b%s%b %b\n" "$PINK" "$glyph" "$RESET" "${warn:-$HOT}" "$line" "$RESET" "${CANDY}♡${RESET}"
+  # The chip line: everything except the open count, cream on the ground. The count gets its own accent chip.
+  main=""
+  for p in "${parts[@]}"; do [ "$p" = "$open open" ] && continue; main="${main:+$main · }$p"; done
+  CHIP="\033[48;2;${GROUND}m\033[38;2;${PAPER}m"
+  [ -n "$ctx" ] && [ "$ctx" -ge 80 ] 2>/dev/null && CHIP="\033[48;2;${GROUND}m\033[38;2;${GOLD}m"   # gold when context runs low
+  ITEMS=""
+  [ -n "$open" ] && [ "$open" != "0" ] && ITEMS=" \033[48;2;${ACC}m\033[38;2;${INK}m\033[1m ${open} open \033[0m"
+  printf '%b %s %s %b%b\n' "$CHIP" "$glyph" "$main" "\033[0m" "$ITEMS"
 fi

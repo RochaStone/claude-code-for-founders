@@ -9,6 +9,31 @@ One read opens the gate for the rest of the session. Code, configs and everythin
 
 Runs on: Claude Code on your computer.
 
+## Start here
+Every step below happens in the **terminal**: the app where you type instructions to your computer. On a Mac, press Cmd and Space together, type Terminal, and press Return. A window with a blinking cursor opens. That is it.
+A **command** is one line you type (or paste) into the terminal, then press Return.
+If you haven't downloaded the kit yet, start with the root README's Start here. It takes about two minutes.
+A **hook** is a tiny rule Claude Code runs on its own at a set moment. These two run before Claude writes a file and after it reads one. Your **settings file** is `~/.claude/settings.json`, where Claude Code keeps its preferences. The installer saves a backup of it first.
+
+1. Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
+   ```sh
+   cd ~/.claude/skills/claude-code-for-founders
+   ```
+   You will see nothing at all, and that means it worked.
+2. Install the voice gate.
+   ```sh
+   ./voice-gate/install.sh
+   ```
+   You will see `added PreToolUse hook for Write|Edit|MultiEdit` and `added PostToolUse hook for Read`.
+3. Write your voice file. This makes a folder for it and copies in the blank template.
+   ```sh
+   mkdir -p ~/brand && cp voice-gate/voice.example.md ~/brand/voice.md
+   ```
+   You will see nothing, which means it worked. Open `~/brand/voice.md` and fill in the five headings in your own words. Or ask Claude: "help me fill in my voice file, ask me one question at a time".
+4. Start a new Claude Code session, then ask it to write a caption into a folder called `copy`.
+   *A new session: in the terminal, type `/exit` to leave Claude Code, then type `claude` and press Return to start it again. In the desktop app, open a new chat.*
+   You will see Claude stop, read your voice file, and then write. That pause is the gate doing its job.
+
 ## Install
 ```sh
 ./voice-gate/install.sh
@@ -48,6 +73,12 @@ Writing the voice file itself is always allowed, so Claude can help you create i
 bash voice-gate/tests/test_voice_gate.sh
 ```
 The test plays the hook calls Claude Code makes: a blocked write, a read of the voice file, then the same write allowed.
+
+## If it goes wrong
+This happens to everyone the first time. Here are the three most common ones.
+- **Claude says "VOICE GATE" and stops.** That is the gate working. Say "read my voice file, then carry on".
+- **The gate never stops anything.** Start a new session, then check `guarded_paths` in `~/.claude/founders-kit/voice-gate/voice-gate.json` matches the folders your copy lives in.
+- **It says your voice file does not exist yet.** Check `voice_file` in that same config points at `~/brand/voice.md` (or wherever you saved yours).
 
 ## Made by Rocha
 
