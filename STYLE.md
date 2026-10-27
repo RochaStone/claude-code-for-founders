@@ -43,7 +43,7 @@ Every tool uses the same keys. A tool may ignore the ones it doesn't need. Never
 | `fonts.scrawl` | Hand marker |
 | `fonts.script` | A signature script, one accent per surface |
 | `fonts.mono` | Receipts and code |
-| `motif` | One of: `guest-check`, `front-page`, `magazine-scrawl`, `pink-paper`, `sticker-collage`, `rotary`, `leopard`, `retro-tv`, `neutral` |
+| `motif` | The structure: `analog` (paper you could hold), `cyberpunk` (the girly terminal) or `y2k-blog` (the 2003 blog page). Older names still work and map to the nearest one |
 | `lines.masthead` | Your publication name, for front pages and covers |
 | `lines.headline` | Your big line |
 | `lines.scrawl` | A short handwritten line |
@@ -59,9 +59,10 @@ Every tool uses the same keys. A tool may ignore the ones it doesn't need. Never
 Colours are hex: `#50163C`. Fonts are Google Fonts names. If a font isn't on Google Fonts, tools fall back to the next font in their stack and say so.
 
 ## In this kit
-Only pink-terminal is visual. It reads:
+Only pink-terminal is visual. Your palette and fonts set the colour and type. Your motif sets the structure. Both are yours to curate. It reads:
 - `palette` for the status line colours, the three terminal themes and the wallpaper (`hero` is the ground, `paper` the type, `accent` the open-items chip, `gold` the stamp and rules),
 - `lines.stamp` for the badge at the end of the status line and the stamp on the wallpaper,
-- `lines.headline` and `lines.scrawl` for the wallpaper text.
+- `lines.headline` and `lines.scrawl` for the wallpaper text,
+- `motif` for which of the three wallpapers you get (or pass `--motif`).
 
 To test a style file without moving it, set `ROCHA_CODED_STYLE=/path/to/style.json`.

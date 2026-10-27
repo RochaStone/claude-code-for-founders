@@ -15,6 +15,12 @@ BUNDLED = [os.path.join(HERE, "style.rocha-coded.json"),
            os.path.join(HERE, "..", "examples", "style.rocha-coded.json")]
 HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
 INHERITED = ("palette", "fonts")
+MOTIFS = ("analog", "cyberpunk", "y2k-blog")
+# Older motif names still work: each maps to its nearest family.
+MOTIF_ALIASES = {"guest-check": "analog", "front-page": "analog", "magazine-scrawl": "analog", "pink-paper": "analog",
+                 "neutral": "analog", "retro-tv": "cyberpunk", "leopard": "cyberpunk", "rotary": "y2k-blog",
+                 "sticker-collage": "y2k-blog"}
+PIXEL_FONT = "Silkscreen"            # chrome labels only, with Pixelify Sans as the fallback
 PLACEHOLDER = "YOUR WORDS HERE"
 
 
@@ -67,6 +73,12 @@ def load_style(path=None, cwd=None):
         if not (isinstance(val, str) and HEX.match(val)):
             palette[key] = base.get("palette", {}).get(key, "#3B1230")
     return style, path
+
+
+def motif_of(value):
+    """analog, cyberpunk or y2k-blog for any motif value, old or new. Unknown or blank means analog."""
+    v = str(value or "").strip().lower()
+    return v if v in MOTIFS else MOTIF_ALIASES.get(v, "analog")
 
 
 def slug(name):

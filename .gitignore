@@ -12,3 +12,4 @@ state/
 *.log
 .DS_Store
 .pre-commit-config.yaml
+.open-items-visits

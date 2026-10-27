@@ -11,11 +11,11 @@ export ROCHA_CODED_STYLE="$HERE/../examples/style.rocha-coded.json"   # your own
 sl() { printf '%s' "$1" | OPEN_ITEMS_FILE="$ITEMS" NO_COLOR=1 bash "$HERE/statusline.sh"; }
 
 out=$(sl '{"model":{"display_name":"Opus"},"cost":{"total_cost_usd":0.4213},"context_window":{"used_percentage":42.4}}')
-check "full JSON: model, context, cost and open count" "[ \"\$out\" = '🐆 Opus · ctx 42% · \$0.42 · 3 open · LORE' ]"
+check "full JSON: model, context, cost and open count" "[ \"\$out\" = 'ᓚᘏᗢ Opus · ctx ████░░░░░░ 42% · \$0.42 · 3 open · LORE' ]"
 out=$(sl '{"model":{"display_name":"Sonnet"},"context_window":{"used_percentage":12}}')
-check "missing cost: no empty slot, fields stay in place" "[ \"\$out\" = '🐆 Sonnet · ctx 12% · 3 open · LORE' ]"
+check "missing cost: no empty slot, fields stay in place" "[ \"\$out\" = 'ᓚᘏᗢ Sonnet · ctx █░░░░░░░░░ 12% · 3 open · LORE' ]"
 out=$(sl '{"model":{"display_name":"Opus"},"context_window":{"total_input_tokens":50000,"context_window_size":200000}}')
-check "context worked out from token counts when no percentage" "printf '%s' \"\$out\" | grep -q 'ctx 25%'"
+check "context worked out from token counts when no percentage" "printf '%s' \"\$out\" | grep -q 'ctx ███░░░░░░░ 25%'"
 printf '{"lines":{"stamp":""}}' > "$T/nostamp.json"
 out=$(printf '{}' | ROCHA_CODED_STYLE="$T/nostamp.json" OPEN_ITEMS_FILE="$T/none.md" NO_COLOR=1 PINK_TERMINAL_ASCII=1 bash "$HERE/statusline.sh")
 check "empty JSON and no items file: just the glyph, ASCII mode" "[ \"\$out\" = '=^.^= ' ]"
@@ -25,6 +25,29 @@ out=$(printf '{"model":{"display_name":"Opus"}}' | OPEN_ITEMS_FILE="$ITEMS" bash
 check "open items sit in their own candy pink chip with ink type" "printf '%s' \"\$out\" | grep -q '48;2;254;157;202m.*38;2;59;18;48m.* 3 open '"
 out=$(printf 'garbage' | NO_COLOR=1 bash "$HERE/statusline.sh"); rc=$?
 check "garbage input never breaks the line" "[ $rc -eq 0 ]"
+out=$(printf '{"model":{"display_name":"Opus"},"context_window":{"used_percentage":42}}' | OPEN_ITEMS_FILE="$ITEMS" bash "$HERE/statusline.sh")
+check "cyberpunk strip: rocheverse prompt, scanline dither edges, pixel leopard" "printf '%s' \"\$out\" | grep -qF 'rocheverse:~\$' && printf '%s' \"\$out\" | grep -q '░▒' && printf '%s' \"\$out\" | grep -q '▒░' && printf '%s' \"\$out\" | grep -q 'ᓚᘏᗢ'"
+check "candy block cursor at the end of the line" "printf '%s' \"\$out\" | grep -q '38;2;254;157;202m█'"
+check "no neon or glow: only plain colour codes, no blink" "! printf '%s' \"\$out\" | grep -q '\[5m'"
+out=$(printf '{}' | NO_COLOR=1 PINK_TERMINAL_GLYPH=emoji OPEN_ITEMS_FILE="$T/none.md" bash "$HERE/statusline.sh")
+check "PINK_TERMINAL_GLYPH=emoji brings back the leopard emoji" "printf '%s' \"\$out\" | grep -q '🐆'"
+
+# Three motifs, one generator: each renders, is valid, and carries its signature.
+for pair in "analog:VOL. 1 · NO. 001" "cyberpunk:rocheverse:~\$" "y2k-blog:you are visitor no. 000,777"; do
+  m=${pair%%:*}; sig=${pair#*:}
+  python3 "$HERE/make-wallpaper.py" --style "$HERE/../examples/style.rocha-coded.json" --motif "$m" --out "$T/m-$m.svg" > /dev/null
+  check "motif $m renders valid SVG with its signature ($sig)" "python3 -c 'import xml.dom.minidom,sys;xml.dom.minidom.parse(sys.argv[1])' '$T/m-$m.svg' && grep -qF -- '$sig' '$T/m-$m.svg'"
+done
+check "the three motifs are three different structures" "! cmp -s '$T/m-analog.svg' '$T/m-cyberpunk.svg' && ! cmp -s '$T/m-cyberpunk.svg' '$T/m-y2k-blog.svg'"
+check "cyberpunk has scanlines and a block progress bar, y2k-blog has a window and pixel hearts" "grep -q 'id=\"scan\"' '$T/m-cyberpunk.svg' && grep -q 'rocheverse.exe' '$T/m-y2k-blog.svg' && grep -q 'id=\"tile\"' '$T/m-y2k-blog.svg'"
+check "no glow filters in any motif" "! grep -qiE 'feGaussianBlur|glow' '$T'/m-*.svg"
+printf '{"motif":"retro-tv","palette":{},"lines":{"headline":"HELLO"}}' > "$T/old.json"
+python3 "$HERE/make-wallpaper.py" --style "$T/old.json" --out "$T/old.svg" > /dev/null
+check "an old motif name maps to its family (retro-tv is cyberpunk)" "grep -q 'id=\"scan\"' '$T/old.svg'"
+python3 "$HERE/make-wallpaper.py" --style "$T/old.json" --motif glitter --out "$T/odd.svg" > /dev/null
+check "an unknown motif falls back to analog" "grep -qF 'VOL. 1 · NO. 001' '$T/odd.svg'"
+python3 "$HERE/make-wallpaper.py" --style "$T/old.json" --motif y2k-blog --out "$T/old-y2k.svg" > /dev/null
+check "a user's y2k window is titled with her own world, never rocheverse" "grep -q 'my-world.exe' '$T/old-y2k.svg' && ! grep -qi rocheverse '$T/old-y2k.svg'"
 
 # Make it yours: a second palette changes the status line, the themes and the wallpaper.
 cat > "$T/style.json" <<'JSON'
@@ -48,7 +71,7 @@ python3 "$HERE/themes/make-themes.py" --style "$HERE/../examples/style.rocha-cod
 check "the shipped themes are exactly the generator's output for Rocha's style" "cmp -s '$T/rc/rocha-coded.itermcolors' '$HERE/themes/rocha-coded.itermcolors' && cmp -s '$T/rc/rocha-coded.ghostty' '$HERE/themes/rocha-coded.ghostty' && cmp -s '$T/rc/rocha-coded.yaml' '$HERE/themes/rocha-coded.yaml'"
 python3 "$HERE/make-wallpaper.py" --style "$T/style.json" --out "$T/wall.svg" > /dev/null
 check "wallpaper from a second style uses its words and colours" "python3 -c 'import xml.dom.minidom,sys;xml.dom.minidom.parse(sys.argv[1])' '$T/wall.svg' && grep -q 'TIDE' '$T/wall.svg' && grep -q '#0077B6' '$T/wall.svg' && grep -q 'salt water heals' '$T/wall.svg'"
-python3 "$HERE/make-wallpaper.py" --style "$HERE/../examples/style.rocha-coded.json" --out "$T/rc.svg" > /dev/null
+python3 "$HERE/make-wallpaper.py" --style "$HERE/../examples/style.rocha-coded.json" --date "27 Oct 2026" --out "$T/rc.svg" > /dev/null
 # Inheritance rule: a user file borrows only missing palette colours and fonts, never her words.
 printf '{"name":"","palette":{"hero":"#123456"},"lines":{}}' > "$T/partial.json"
 check "loader: missing colours and fonts fall back, words and identity never do" "python3 -c '
@@ -65,7 +88,9 @@ check "wallpaper for a user without lines shows YOUR WORDS HERE, none of hers" "
 python3 "$HERE/themes/make-themes.py" --style "$T/partial.json" --out "$T/pt" > /dev/null
 check "themes for an unnamed user style are not named after hers" "[ -f '$T/pt/my-style.itermcolors' ] && ! ls '$T/pt' | grep -q rocha"
 out=$(printf '{"model":{"display_name":"Opus"}}' | ROCHA_CODED_STYLE="$T/partial.json" OPEN_ITEMS_FILE="$T/none.md" NO_COLOR=1 bash "$HERE/statusline.sh")
-check "status line for a user without a stamp shows no stamp, never hers" "[ \"\$out\" = '🐆 Opus' ]"
+check "status line for a user without a stamp shows no stamp, never hers" "[ \"\$out\" = 'ᓚᘏᗢ Opus' ]"
+out=$(printf '{"model":{"display_name":"Opus"}}' | ROCHA_CODED_STYLE="$T/partial.json" OPEN_ITEMS_FILE="$T/none.md" bash "$HERE/statusline.sh")
+check "a user without a name gets her own prompt, never rocheverse" "printf '%s' \"\$out\" | grep -qF 'you:~\$' && ! printf '%s' \"\$out\" | grep -q rocheverse"
 check "the shipped wallpaper.svg is the generator's output for Rocha's style" "cmp -s '$T/rc.svg' '$HERE/wallpaper.svg'"
 
 if command -v plutil >/dev/null 2>&1; then

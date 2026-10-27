@@ -34,6 +34,9 @@ dashes=$(grep -rIl -e "$EM" -e "$EN" --exclude-dir=.git --exclude-dir=dist . 2>/
 long=$(find . -type f \( -name '*.sh' -o -name '*.py' -o -name '*.md' -o -name '*.html' \) -not -path './.git/*' -exec awk 'END { if (NR > 500) print FILENAME " (" NR " lines)" }' {} \;)
 [ -z "$long" ] && ok "no file over 500 lines" || bad "files over 500 lines: $long"
 
+big=$(find docs/img -name '*.svg' -size +2k 2>/dev/null)
+[ -z "$big" ] && ok "pixel badges and dividers are under 2 KB each" || bad "README pixel images over 2 KB: $big"
+
 TLOG=$(mktemp "${TMPDIR:-/tmp}/ccff-tests.XXXXXX")
 if ./scripts/run-tests.sh > "$TLOG" 2>&1; then ok "all test suites pass"; else bad "tests failed:"; tail -20 "$TLOG"; fi
 rm -f "$TLOG"

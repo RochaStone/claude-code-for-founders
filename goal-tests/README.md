@@ -16,26 +16,31 @@ A **command** is one line you type (or paste) into the terminal, then press Retu
 If you haven't downloaded the kit yet, start with the root README's Start here. It takes about two minutes.
 A **probe** is one tiny check, like "my home page still loads". A **schedule** runs something at a set time every day: on a Mac that is **launchd**, on Linux it is **cron**. You never have to touch either. The installer sets it up.
 
-1. Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
-   ```sh
-   cd ~/.claude/skills/claude-code-for-founders
-   ```
-   You will see nothing at all, and that means it worked.
-2. Install goal tests and schedule the morning check for 8am.
-   ```sh
-   ./goal-tests/install.sh
-   ```
-   You will see `daily sweep scheduled at 08:00` and a short Next list.
-3. Copy your first probe into place. This one checks a web page loads.
-   ```sh
-   cp ~/.claude/goal-tests/examples/site-is-up.sh ~/.claude/goal-tests/goals/
-   ```
-   You will see nothing, which means it copied. Open that copied file in any text editor and change `https://example.com/` to your own website.
-4. Run your first check now, instead of waiting for the morning.
-   ```sh
-   bash ~/.claude/goal-tests/goals-runner.sh
-   ```
-   You will see `PASS site-is-up: OK 200`. Your website is officially being looked after.
+<img src="../docs/img/step-01.svg" alt="Step 1" height="22">&nbsp; Go to the kit's folder. `cd` means "change folder", and `~` means your home folder.
+```sh
+cd ~/.claude/skills/claude-code-for-founders
+```
+You will see nothing at all, and that means it worked.
+
+<img src="../docs/img/step-02.svg" alt="Step 2" height="22">&nbsp; Install goal tests and schedule the morning check for 8am.
+```sh
+./goal-tests/install.sh
+```
+You will see `daily sweep scheduled at 08:00` and a short Next list.
+
+<img src="../docs/img/step-03.svg" alt="Step 3" height="22">&nbsp; Copy your first probe into place. This one checks a web page loads.
+```sh
+cp ~/.claude/goal-tests/examples/site-is-up.sh ~/.claude/goal-tests/goals/
+```
+You will see nothing, which means it copied. Open that copied file in any text editor and change `https://example.com/` to your own website.
+
+<img src="../docs/img/step-04.svg" alt="Step 4" height="22">&nbsp; Run your first check now, instead of waiting for the morning.
+```sh
+bash ~/.claude/goal-tests/goals-runner.sh
+```
+You will see `PASS site-is-up: OK 200`. Your website is officially being looked after.
+
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
 
 ## Install
 ```sh
@@ -48,6 +53,8 @@ Then copy an example into `~/.claude/goal-tests/goals/`, change its URL, and run
 bash ~/.claude/goal-tests/goals-runner.sh
 ```
 
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
+
 ## A probe
 Three examples ship in `examples/`:
 - `site-is-up.sh`: the home page answers.
@@ -57,6 +64,8 @@ Three examples ship in `examples/`:
 Every probe follows [the contract](CONTRACT.md): a `# GOAL:` line, a `# BUILD:` line, exit 0 when it works.
 **Probes are read-only.** They look. They never deploy, push, send or buy.
 Ask Claude to write the next one: "write a goal test probe that checks my booking page still shows Friday slots."
+
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
 
 ## How you hear about it
 Set the channels in `~/.claude/goal-tests/goal-tests.config.json`:
@@ -70,6 +79,8 @@ Set the channels in `~/.claude/goal-tests/goal-tests.config.json`:
 
 Secrets (the webhook URL, the mail password) go in `~/.claude/goal-tests/secrets.env`, never in the config.
 Lock it: `chmod 600 ~/.claude/goal-tests/secrets.env`. The runner refuses an env file other people can read.
+
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
 
 ## What a notice looks like
 ```text
@@ -86,6 +97,8 @@ BROKEN
         3f2a9c1 new hero section
 ```
 
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
+
 ## The details, for the curious
 - **One clock per probe.** Each probe gets 90 seconds (`timeout_seconds`). Slower counts as broken, exit 124.
 - **Offline is not broken.** Set `offline_check_url` and a sweep with no internet is skipped, not failed.
@@ -93,22 +106,32 @@ BROKEN
 - **What changed.** For a new break, the notice lists commits since the last pass in the probe's `# BUILD:` repo and every repo in `watch_repos`, plus uncommitted changes.
 - **Deleting a broken probe** removes it quietly. It is not reported as recovered.
 
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
+
 ## Uninstall
 ```sh
 ./goal-tests/install.sh --uninstall
 ```
 This removes the daily job. Your probes, config and ledger stay in `~/.claude/goal-tests/`.
 
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
+
 ## Test it
 ```sh
 bash goal-tests/tests/test_runner.sh
 ```
 
-## If it goes wrong
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
+
+## If it goes wrong (everyone's first time) <img src="../docs/img/heart.svg" alt="" height="16">
 This happens to everyone the first time. Here are the three most common ones.
 - **You see `FAIL ... could not reach`.** Check the address in the probe has `https://` at the front and opens in your browser. If you are offline, the check waits for the wifi.
 - **No banner appears on your Mac.** Open System Settings > Notifications, find Script Editor, and turn on Allow notifications.
 - **The 8am check didn't happen.** Your laptop was asleep. The check runs as soon as it wakes, so nothing is missed.
+
+[Sign my guestbook](https://github.com/RochaStone/claude-code-for-founders/issues) ✧ say hello, ask a question, or tell me what you built.
+
+<img src="../docs/img/divider.svg" alt="" width="600" height="3">
 
 ## Made by Rocha
 

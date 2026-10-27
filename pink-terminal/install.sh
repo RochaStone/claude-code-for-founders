@@ -4,6 +4,7 @@
 #   ./install.sh                     set the pink status line in ~/.claude/settings.json
 #   ./install.sh --themes            also copy the Ghostty and Warp themes into place (iTerm2 is one double-click)
 #   ./install.sh --wallpaper [WxH]   render the wallpaper to ~/Pictures/one-woman-show.png (default 2560x1600, needs Google Chrome)
+#        add --motif analog|cyberpunk|y2k-blog to pick the look (default: your style.json motif)
 #   ./install.sh --uninstall         remove the status line (only if it is this one)
 #
 # Colours and words come from your style.json (see STYLE.md at the repo root). Rocha's look is the fallback.
@@ -17,13 +18,14 @@ CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 SETTINGS="$CLAUDE_DIR/settings.json"
 DEST="$CLAUDE_DIR/founders-kit/pink-terminal"
 CHROME="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
-STATUS=1; THEMES=0; WALL=""
+STATUS=1; THEMES=0; WALL=""; MOTIF=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --themes) THEMES=1; shift ;;
     --wallpaper) STATUS=0; WALL="2560x1600"; shift
                  if [[ "${1:-}" =~ ^[0-9]{3,5}x[0-9]{3,5}$ ]]; then WALL="$1"; shift; fi ;;
+    --motif) MOTIF="${2:-}"; shift 2 ;;
     --uninstall) python3 "$MERGE" remove-statusline --settings "$SETTINGS" --contains "founders-kit/pink-terminal/statusline.sh"; exit 0 ;;
     -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
@@ -39,7 +41,7 @@ if [ -n "$WALL" ]; then
   TMPD=$(mktemp -d); trap 'rm -rf "$TMPD"' EXIT
   # Inline (not <img>) so the SVG can load its Google Fonts. Other screen shapes get margins in your ground colour.
   # Built from your style.json (see STYLE.md), else the bundled example.
-  python3 "$SRC/make-wallpaper.py" --out "$TMPD/w.svg" >/dev/null
+  python3 "$SRC/make-wallpaper.py" --out "$TMPD/w.svg" ${MOTIF:+--motif "$MOTIF"} >/dev/null
   bg=$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); from rocha_style import load_style; print(load_style()[0]["palette"]["hero"])' "$SRC")
   { printf '<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:%s;overflow:hidden}svg{width:100vw;height:100vh;display:block}</style>' "$bg"
     cat "$TMPD/w.svg"; } > "$TMPD/w.html"

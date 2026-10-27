@@ -6,11 +6,17 @@ T=$(mktemp -d "${TMPDIR:-/tmp}/nat-test.XXXXXX"); trap 'rm -rf "$T"' EXIT
 PASS=0; FAIL=0
 check(){ if eval "$2"; then echo "  ok   $1"; PASS=$((PASS+1)); else echo "  FAIL $1"; FAIL=$((FAIL+1)); fi; }
 echo "never-ask-twice"
+export OPEN_ITEMS_VISITS_FILE="$T/visits"   # keep the visitor counter out of the repo
 
 out=$(OPEN_ITEMS_FILE="$HERE/templates/OPEN_ITEMS.md" bash "$HERE/session-start.sh")
 check "hook counts 3 open items in the template" "printf '%s' \"\$out\" | grep -q '3 open, 0 parked'"
 check "hook shows owner and default" "printf '%s' \"\$out\" | grep -q '#2 \[ME\] Decide the price.*default: Keep it in drafts'"
-check "hook keeps the block compact (under 1KB)" "[ \${#out} -lt 1024 ]"
+check "hook keeps the block compact (under 2KB)" "[ \${#out} -lt 2048 ]"
+check "the block sits inside a y2k window frame" "printf '%s' \"\$out\" | head -1 | grep -qF '+-[ open-items.txt ]' && printf '%s' \"\$out\" | head -1 | grep -qF '[_][o][x]-+'"
+check "every framed line is the same width" "[ \$(printf '%s\\n' \"\$out\" | sed '\$d' | awk '{ print length }' | sort -u | wc -l) -eq 1 ]"
+check "the visitor counter shows session 1" "printf '%s' \"\$out\" | tail -1 | grep -q 'you are visitor no. 000,001'"
+out=$(OPEN_ITEMS_FILE="$HERE/templates/OPEN_ITEMS.md" bash "$HERE/session-start.sh")
+check "the visitor counter counts each session" "printf '%s' \"\$out\" | tail -1 | grep -q '000,002'"
 
 cat > "$T/items.md" <<'MD'
 ## Open
@@ -43,7 +49,7 @@ check "install keeps your other settings and hooks" "python3 -c \"import json;d=
 check "install registers one SessionStart hook" "python3 -c \"import json;d=json.load(open('$T/claude/settings.json'));assert len(d['hooks']['SessionStart'])==1\""
 check "install creates OPEN_ITEMS.md from the template" "[ -f '$T/claude/OPEN_ITEMS.md' ]"
 cmd=$(python3 -c "import json;print(json.load(open('$T/claude/settings.json'))['hooks']['SessionStart'][0]['hooks'][0]['command'])")
-check "the registered command runs and prints the block" "bash -c \"\$cmd\" | grep -q 'OPEN ITEMS: 3 open'"
+check "the registered command runs and prints the block" "bash -c \"\$cmd\" | grep -q '3 open, 0 parked'"
 echo "my own list" > "$T/claude/OPEN_ITEMS.md"
 CLAUDE_DIR="$T/claude" bash "$HERE/install.sh" > "$T/log" 2>&1
 check "re-install is idempotent (still one hook)" "python3 -c \"import json;d=json.load(open('$T/claude/settings.json'));assert len(d['hooks']['SessionStart'])==1\""
